@@ -1,0 +1,20 @@
+<html>
+
+<b>Hello</b> from a template. Change text here to modify
+<p>
+{{ data }}
+
+{% for image in imagefilenames %}
+
+<P>
+
+<img src="{{item}}">
+
+{% endfor %}
+
+<form action="/search">
+<input type=text name="query">enter a thing to search for </input>
+<input type="submit">Click to search </input>
+</form>
+
+</html>
