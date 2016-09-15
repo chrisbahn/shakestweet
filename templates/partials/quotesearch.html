@@ -1,0 +1,17 @@
+{% extends "shakestweet.html" %}
+{% block quotesearch %}
+
+<b>Hello</b> from a template
+
+{{data}}
+
+{% for image in imagefilenames %}
+<P><img src="{{item}}">
+{% endfor %}
+
+<form action="/search">
+<input type=text name="query">Search for thy quote, miscreant!</input>
+<input type="submit">Click to search </input>
+</form>
+{% endblock %}
+

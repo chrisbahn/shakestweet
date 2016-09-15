@@ -1,7 +1,12 @@
-<html>
+{% extends "layout.html" %}
+{% block shakestweet %}
+  <ul class="fnord">
+    <li><em>What is going on here?</em></li>
+    test text
+   </ul>
 
-<b>Hello</b> from a template. Change text here to modify
-<p>
+<b>Hello</b> from a template
+
 {{ data }}
 
 {% for image in imagefilenames %}
@@ -12,9 +17,28 @@
 
 {% endfor %}
 
-<form action="/search">
-<input type=text name="query">enter a thing to search for </input>
-<input type="submit">Click to search </input>
+<form action="/searchimages">
+Find images by keyword: <input type=text name="query"></input>
+<input type="submit" value="IMAGE SEARCH"></input>
+</form>
+<p></p>
+<form action="/searchplays">
+Find quotes by keyword: <input type=text name="query"></input>
+<input type="submit" value="QUOTE SEARCH"></input>
+</form>
+<p></p>
+<form action="/merge">
+<input type="submit" value="MERGE IMAGE & QUOTE"></input>
+</form>
+<p></p>
+<form action="/tweet">
+<input type="submit" value="TWEET FINAL RESULT"></input>
+</form>
+<p></p>
+<form action="/imagesearch">
+<input type="submit" value="IMAGE SEARCH"></input>
 </form>
 
-</html>
+
+
+{% endblock %}
