@@ -23,15 +23,17 @@ import os
 import json, requests, sys, random
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
-
+from wtforms import RadioField, SubmitField
+from wtforms.validators import DataRequired
+from flask_wtf import Form
 
 # create our little application :)
 app = Flask(__name__)
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
-    DATABASE=os.path.join(app.root_path, 'shakestweet.db'),
-#    DATABASE=os.path.join(app.root_path, 'fnord'),
+    # DATABASE=os.path.join(app.root_path, 'shakestweet.db'),
+    DATABASE=os.path.join(app.root_path, 'fnord'),
     DEBUG=True,
     SECRET_KEY='development key',
     USERNAME='admin', #for Twitter, s/b os.path.join(app.root_path, '/static/secret/twitter_usrname'),
@@ -39,30 +41,9 @@ app.config.update(dict(
 ))
 app.config.from_envvar('SHAKESTWEET_SETTINGS', silent=True)
 
-
-# def convert_json_to_sqlite():
-#     # JSON to SQLite3 converter modified from here: https://gist.github.com/atsuya046/7957165#file-jsontosqlite-py
-#     # This downloads the JSON data containing Shakespeare texts from my website
-#     url = 'http://christopherbahn.com/programming/will_play_text_python.json'
-#     response = requests.get(url)
-#     response.raise_for_status()
-#     # Load JSON data into a Python variable.
-#     bill = json.loads(response.text, strict=False)
-#
-#     line_id = bill[0]["line_id"]
-#     play_name = bill[0]["play_name"]
-#     speech_number = bill[0]["speech_number"]
-#     line_number = bill[0]["line_number"]
-#     speaker = bill[0]["speaker"]
-#     text_entry = bill[0]["text_entry"]
-#     data = [line_id, play_name, speech_number, line_number, speaker, text_entry]
-#
-#     if not session.get('logged_in'):
-#         abort(401)
-#     db = get_db()
-#     db.execute('insert into shakespearetext (line_id, play_name, speech_number, line_number, speaker, text_entry) values (?, ?, ?, ?, ?, ?)', data)
-#     db.commit()
-
+class SimpleForm(Form):
+    example = RadioField('Quotes', choices=[('value','description'),('value_two','whatever')])
+    submit = SubmitField('Choose selected quote')
 
 def connect_db():
     """Connects to the specific database."""
@@ -108,13 +89,11 @@ def close_db(error):
 
 # TODO This is the default page. It's where the main part of your program goes.
 @app.route('/')
-def show_shakestweet():
-   return render_template('shakestweet.html', data="hello there!!!!")
-# def show_entries():
-#     db = get_db()
-#     cur = db.execute('select title, text from entries order by id desc')
-#     entries = cur.fetchall()
-#     return render_template('show_entries.html', entries=entries)
+def show_entries():
+    db = get_db()
+    cur = db.execute('select title, text from entries order by id desc')
+    entries = cur.fetchall()
+    return render_template('show_entries.html', entries=entries)
 
 
 @app.route('/add', methods=['POST'])
@@ -150,45 +129,83 @@ def logout():
     flash('You were logged out')
     return redirect(url_for('show_entries'))
 
-# TODO Below this line is incomplete stuff I'm not sure I will keep
-@app.route('/start')
-def show_template():
-	return render_template('shakestweet.html', data="hello!!")
+# TODO Below this line is incomplete stuff
+@app.route('/start',methods = ['POST', 'GET'])
+def main_navigation():
+    # TODO get the buttons working http://stackoverflow.com/questions/19794695/flask-python-buttons
+    return render_template('shakestweet.html', data="hello!!")
+    # if 'quotechosen' in request.form['submit']:
+    #     return render_template('shakestweet.html', data="hello!!")
+    # elif 'newquotesearch' in request.form['submit']:
+    #     return render_template('shakestweet.html', data="hey there!!")
+    # else:
+    #     return render_template('shakestweet.html', data="hello!!")
+#  if request.form.validate_on_submit():
+#     if 'quotechosen' in request.form:
+#         return render_template('shakestweet.html', data="You have chosen a quote!")
+#     elif 'newquotesearch' in request.form:
+#         return render_template('shakestweet.html', data="hello!!")
+#
+#     if request.method == 'POST':
+#         if request.form['submit'] == 'Choose selected quote':
+#             return render_template('shakestweet.html', data="You have chosen a quote!")
+#         elif request.form['submit'] == 'New search':
+#             return render_template('shakestweet.html', data="hello!!")
+#     #     else:
+#     #         pass  # unknown
+#     elif request.method == 'GET':
+#         return render_template('shakestweet.html', data="hellofdsuhfdsuhfsdufsd!!")
 
 
 @app.route('/searchplays')
 def search_for_quotes():
-    # TODO search for appropriate quote and do stuff with it
+    # This code returns results for a search for a particular word:
     print(request.args)
-    searchShakes = request.args.get('query')
+    searchShakes = request.args.get('playquery')
     # This if-else prevents an error if user goes to /search webpage (searching for "None"). /search?query=<foo> returns the expected result.
     if searchShakes == None:
         return "how did you get here?"
+    elif searchShakes == 'banana':
+            return "Yes, we have no bananas"
     else:
-        newLine = 'Search results for %s:' % (searchShakes)
-        print('Search results AGAIN for %s:' % (searchShakes))
-        searchResultList = []
-        searchResultList.append(newLine)
-        for line in query_db("SELECT * FROM shakespearetext WHERE text_entry LIKE '%" + searchShakes + "%'"):
-            searchResultList.append(newLine)
-            #print
-            #user['username'], 'has the id', user['user_id']
-            return newLine + newLine
+        db = get_db()
+        cur = db.execute("SELECT * FROM shakespearetext WHERE text_entry LIKE '%" + searchShakes + "%'")
+        shakeslines = cur.fetchall()
 
-        # This SHOULD print entire list of search results
-        #searchResultList = list(getSearchResultList(searchShakes, bill))
-        # return (list(getSearchResultList(searchShakes,bill)))
+        radiofieldChoices = []
+        rfChoices = []
+        # for line in shakeslines:
+        #     radiofieldValue = ['line_id']
+        #     # radiofieldQuote = ['speaker'] + ': ' + ['text_entry'] + '(from ' + ['play_name'] + ')'
+        #     radiofieldQuote = 'FORSOOTH'
+        #     radiofieldChoices.append([radiofieldValue, radiofieldQuote])
+        # # rfChoices = RadioField('Label', choices=[radiofieldChoices])
+        # rfChoices = SimpleForm('Quotes', choices=[(radiofieldChoices)])
+        # if rfChoices.validate_on_submit():
+        #     return render_template('quotesearch.html', shakeslines=shakeslines, searchShakes=searchShakes, quotechosen=False, radiofieldChoices=radiofieldChoices, rfChoices=rfChoices)
+        # else:
+        #     return render_template('quotesearch.html', shakeslines=shakeslines, searchShakes=searchShakes, quotechosen=False, radiofieldChoices=radiofieldChoices, rfChoices=rfChoices)
+        return render_template('quotesearch.html', shakeslines=shakeslines, searchShakes=searchShakes, quotechosen=False, radiofieldChoices=radiofieldChoices, rfChoices=rfChoices)
 
 
-def getSearchResultList(searchShakes, bill):
-    # This code returns results for a search for a particular word:
-    print('Search results for %s:' % (searchShakes))
-    newLine = 'Search results for %s:' % (searchShakes)
-    searchResultList = []
-    searchResultList.append(newLine)
-    for line in bill:
-        if line['text_entry'].__contains__(searchShakes):
-            print(line['speaker'], ':', line['text_entry'], '(from ', line['play_name'], ')')
-            newLine = line['speaker'] + ": " + line['text_entry'] + " (from " + line['play_name'] + ")"
-            searchResultList.append(newLine)
-    return render_template('show_entries.html', entries=entries)
+@app.route('/quotechosen')
+def quote_chosen():
+    lineID = request.args.get('quotechoice', '')
+    flash('You chose line #' + lineID)
+    db = get_db()
+    cur = db.execute("SELECT * FROM shakespearetext WHERE line_id LIKE '%" + lineID + "%'")
+    chosenShakesline = cur.fetchall()
+    return render_template('shakestweet.html', data="You have chosen a quote!", quotechosen=True, lineID=lineID, chosenShakesline = chosenShakesline)
+
+@app.route('/newsearch')
+def new_search_for_quotes():
+    return render_template('shakestweet.html', data="You have cancelled your text search!!", quotechosen=False)
+
+
+
+
+# TODO Add the system for getting photos from Flickr
+# TODO Add the system for tweeting. Use Tweepy.
+
+if __name__ == '__main__':
+    app.run()

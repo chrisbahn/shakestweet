@@ -1,13 +1,10 @@
 {% extends "layout.html" %}
 {% block shakestweet %}
-  <ul class="fnord">
-    <li><em>What is going on here?</em></li>
-    test text
-   </ul>
-
 <b>Hello</b> from a template
+<P>
 
-{{ data }}
+{{ data }}<P>
+
 
 {% for image in imagefilenames %}
 
@@ -18,12 +15,21 @@
 {% endfor %}
 
 <form action="/searchimages">
-Find images by keyword: <input type=text name="query"></input>
+Find images by keyword: <input type=text name="imagequery"></input>
 <input type="submit" value="IMAGE SEARCH"></input>
 </form>
 <p></p>
+  {% if quotechosen %}
+You have selected a line from Shakespeare. It is line# {{lineID}}:<br>
+  {% for line in chosenShakesline %}
+    <b>{{ line.speaker }}: {{ line.text_entry }} (from <i>{{ line.play_name}}</i>)</b><br>
+  {% endfor %}
+To choose again, enter a new search term:
+  {% else %}
+Find quotes by keyword:
+{% endif %}
 <form action="/searchplays">
-Find quotes by keyword: <input type=text name="query"></input>
+<input type=text name="playquery"></input>
 <input type="submit" value="QUOTE SEARCH"></input>
 </form>
 <p></p>
