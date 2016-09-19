@@ -24,6 +24,7 @@ You have selected a line from Shakespeare. It is line# {{lineID}}:<br>
   {% for line in chosenShakesline %}
     <b>{{ line.speaker }}: {{ line.text_entry }} (from <i>{{ line.play_name}}</i>)</b><br>
   {% endfor %}
+Again, that line is: <b>{{stringChosenShakesline}}</b><br>
 To choose again, enter a new search term:
   {% else %}
 Find quotes by keyword:
@@ -37,12 +38,12 @@ Find quotes by keyword:
 <input type="submit" value="MERGE IMAGE & QUOTE"></input>
 </form>
 <p></p>
-<form action="/tweet">
-<input type="submit" name="tweet" value="TWEET FINAL RESULT"></input>
-</form>
-<p></p>
-<form action="/imagesearch">
-<input type="submit" value="IMAGE SEARCH"></input>
+<form action="{{ url_for('tweet') }}" method="post" class="tweet">
+  <dl>
+    <dt>Thy Tweet:
+    <dd><input type="text" size="140" name="stringChosenShakesline" value="{{stringChosenShakesline}}">
+    <dd><input type="submit" name="tweet" value="TWEET FINAL RESULT"></input>
+  </dl>
 </form>
 
 

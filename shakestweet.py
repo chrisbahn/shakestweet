@@ -1,11 +1,12 @@
 # Modified from http://flask.pocoo.org/docs/0.11/tutorial/
 
 # ORDER OF BATTLE:
-# Program queries art database, user selects picture // WORKS, not yet merged into main program
-# Program queries quote database, returns results, user selects quote // WORKS, now needs to send data to tweeting section
-# User triggers art/quote merger into new image// WORKS, not yet merged into main program
-# User accepts merged image, or makes tweaks until result is satisfactory // TBA
-# User sends image to Twitter account: // WORKS, not yet merged into main program
+# 1) Program queries art database, user selects picture // WORKS, not yet merged into main program
+# 2) Program queries quote database, returns results, user selects quote // WORKS
+# 3) User triggers art/quote merger into new image// WORKS, not yet merged into main program
+# 4) User accepts merged image, or makes tweaks until result is satisfactory // TBA
+# 5) User sends image to Twitter account: // WORKS, not yet merged into main program
+#    a) User can Tweet text // WORKS, and putting the value into a textarea also allows editing before pulling trigger
 
 import os
 import json, requests, sys, random
@@ -29,15 +30,6 @@ app.config.update(dict(
     PASSWORD='default'#for Twitter, s/b os.path.join(app.root_path, '/static/secret/twitter_pwd'),
 ))
 app.config.from_envvar('SHAKESTWEET_SETTINGS', silent=True)
-twitter_consumer_key = open('static/secret/twitter_consumer_key.txt').read()
-twitter_consumer_secret = open('static/secret/twitter_consumer_secret.txt').read()
-twitter_access_token = open('static/secret/twitter_access_token.txt').read()
-twitter_access_token_secret = open('static/secret/twitter_access_token_secret.txt').read()
-
-auth = tweepy.OAuthHandler(twitter_consumer_key, twitter_consumer_secret)
-auth.set_access_token(twitter_access_token, twitter_access_token_secret)
-
-api = tweepy.API(auth)
 
 
 class SimpleForm(Form):
@@ -194,25 +186,35 @@ def quote_chosen():
     db = get_db()
     cur = db.execute("SELECT * FROM shakespearetext WHERE line_id LIKE '%" + lineID + "%'")
     chosenShakesline = cur.fetchall()
-    return render_template('shakestweet.html', data="You have chosen a quote!", quotechosen=True, lineID=lineID, chosenShakesline = chosenShakesline)
+    stringChosenShakesline =  chosenShakesline[0]['speaker'] + ': ' +  chosenShakesline[0]['text_entry'] + '(from ' + chosenShakesline[0]['play_name'] + ')'
+    print('Quote chosen: ' + stringChosenShakesline)
+    return render_template('shakestweet.html', data="You have chosen a quote!", quotechosen=True, lineID=lineID, chosenShakesline = chosenShakesline, stringChosenShakesline = stringChosenShakesline)
 
 @app.route('/newsearch')
 def new_search_for_quotes():
     return render_template('shakestweet.html', data="You have cancelled your text search!!", quotechosen=False)
 
-@app.route('/tweet')
+@app.route('/tweet', methods=['POST'])
 def tweet():
-    chosenShakesline = request.args.get('chosenShakesline')
+    twitter_consumer_key = open('static/secret/twitter_consumer_key.txt').read()
+    twitter_consumer_secret = open('static/secret/twitter_consumer_secret.txt').read()
+    twitter_access_token = open('static/secret/twitter_access_token.txt').read()
+    twitter_access_token_secret = open('static/secret/twitter_access_token_secret.txt').read()
+    auth = tweepy.OAuthHandler(twitter_consumer_key, twitter_consumer_secret)
+    auth.set_access_token(twitter_access_token, twitter_access_token_secret)
+    api = tweepy.API(auth)
+
+    # TODO stringChosenShakesline is not passing from shakestweet to here. Why?
+    tweetThis = request.form['stringChosenShakesline']
     api = tweepy.API(auth)
     # The line below does the actual Tweeting.
-    # api.update_status('Tomorrow and tomorrow and tomorrow...')
-    api.update_status(chosenShakesline)
+    api.update_status(tweetThis)
+    flash('Tweet posted')
 
-    public_tweets = api.home_timeline()
-    for tweet in public_tweets:
-        print(tweet.text)
-
-
+    # public_tweets = api.home_timeline()
+    # for tweet in public_tweets:
+    #     print(tweet.text)
+    return render_template('shakestweet.html', data="YOU HAVE TWEETED", quotechosen=False)
 
 # TODO Add the system for getting photos from Flickr
 
