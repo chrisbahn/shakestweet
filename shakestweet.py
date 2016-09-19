@@ -1,23 +1,11 @@
 # Modified from http://flask.pocoo.org/docs/0.11/tutorial/
 
 # ORDER OF BATTLE:
-# Program queries art database, returns results
-# Program queries quote database, returns results
-# User selects art
-# User selects quote
-# User triggers art/quote merger into new image
-# User accepts merged image, or makes tweaks until result is satisfactory
-# User sends image to Twitter account: Usr/pwd DrMehendriSolon, MONSTER
-
-# -*- coding: utf-8 -*-
-"""
-    Flaskr
-    ~~~~~~
-    A microblog example application written as Flask tutorial with
-    Flask and sqlite3.
-    :copyright: (c) 2015 by Armin Ronacher.
-    :license: BSD, see LICENSE for more details.
-"""
+# Program queries art database, user selects picture // WORKS, not yet merged into main program
+# Program queries quote database, returns results, user selects quote // WORKS, now needs to send data to tweeting section
+# User triggers art/quote merger into new image// WORKS, not yet merged into main program
+# User accepts merged image, or makes tweaks until result is satisfactory // TBA
+# User sends image to Twitter account: // WORKS, not yet merged into main program
 
 import os
 import json, requests, sys, random
@@ -26,6 +14,7 @@ from flask import Flask, request, session, g, redirect, url_for, abort, render_t
 from wtforms import RadioField, SubmitField
 from wtforms.validators import DataRequired
 from flask_wtf import Form
+import tweepy
 
 # create our little application :)
 app = Flask(__name__)
@@ -40,6 +29,16 @@ app.config.update(dict(
     PASSWORD='default'#for Twitter, s/b os.path.join(app.root_path, '/static/secret/twitter_pwd'),
 ))
 app.config.from_envvar('SHAKESTWEET_SETTINGS', silent=True)
+twitter_consumer_key = open('static/secret/twitter_consumer_key.txt').read()
+twitter_consumer_secret = open('static/secret/twitter_consumer_secret.txt').read()
+twitter_access_token = open('static/secret/twitter_access_token.txt').read()
+twitter_access_token_secret = open('static/secret/twitter_access_token_secret.txt').read()
+
+auth = tweepy.OAuthHandler(twitter_consumer_key, twitter_consumer_secret)
+auth.set_access_token(twitter_access_token, twitter_access_token_secret)
+
+api = tweepy.API(auth)
+
 
 class SimpleForm(Form):
     example = RadioField('Quotes', choices=[('value','description'),('value_two','whatever')])
@@ -201,11 +200,21 @@ def quote_chosen():
 def new_search_for_quotes():
     return render_template('shakestweet.html', data="You have cancelled your text search!!", quotechosen=False)
 
+@app.route('/tweet')
+def tweet():
+    chosenShakesline = request.args.get('chosenShakesline')
+    api = tweepy.API(auth)
+    # The line below does the actual Tweeting.
+    # api.update_status('Tomorrow and tomorrow and tomorrow...')
+    api.update_status(chosenShakesline)
+
+    public_tweets = api.home_timeline()
+    for tweet in public_tweets:
+        print(tweet.text)
 
 
 
 # TODO Add the system for getting photos from Flickr
-# TODO Add the system for tweeting. Use Tweepy.
 
 if __name__ == '__main__':
     app.run()
