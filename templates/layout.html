@@ -11,11 +11,15 @@
   {% endif %}
   </div>
   {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
+    <div class="flash">{{ message }}</div><br>
   {% endfor %}
   {% block body %}{% endblock %}
   {% block shakestweet %}{% endblock %}
   {% block quotesearch %}{% endblock %}
   {% block imagesearch %}{% endblock %}
+
+  <form action="/cancel" align="right">
+<input type="submit" name="cancel" value="CANCEL AND START OVER"></input>
+</form>
 
 </div>

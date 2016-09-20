@@ -1,51 +1,52 @@
 {% extends "layout.html" %}
 {% block shakestweet %}
-<b>Hello</b> from a template
-<P>
-
-{{ data }}<P>
-
-
-{% for image in imagefilenames %}
-
-<P>
-
-<img src="{{item}}">
-
-{% endfor %}
-
+<img src="static/images/{{ shakespeare }}.jpg" alt="Shakespeare" height="200" align="right">
+  {% if imagechosen %}
+<img src="static/images/{{ image }}.jpg" height="150"><br>
+  {% else %}
+&#0149; <b>Find an image.</b><br>
 <form action="/searchimages">
-Find images by keyword: <input type=text name="imagequery"></input>
+<input type=text name="imagequery"></input>
 <input type="submit" value="IMAGE SEARCH"></input>
 </form>
-<p></p>
-  {% if quotechosen %}
-You have selected a line from Shakespeare. It is line# {{lineID}}:<br>
-  {% for line in chosenShakesline %}
-    <b>{{ line.speaker }}: {{ line.text_entry }} (from <i>{{ line.play_name}}</i>)</b><br>
-  {% endfor %}
-Again, that line is: <b>{{stringChosenShakesline}}</b><br>
-To choose again, enter a new search term:
-  {% else %}
-Find quotes by keyword:
 {% endif %}
-<form action="/searchplays">
-<input type=text name="playquery"></input>
-<input type="submit" value="QUOTE SEARCH"></input>
-</form>
-<p></p>
+<p>
+  {% if quotelocked and quotechosen %}
+    &#0149; Your quote:<br><b>{{verbiage}}</b><br>
+  {% elif quotechosen and not quotelocked %}
+    &#0149; <b>Quote chosen.</b> Edit the text, if desired, then lock the quote before the next step:<br>
+    <form action="/quotelocked">
+    <input type="text" size="60" name="lockquote" value="{{verbiage}}"></input>
+    <input type="submit" value="LOCK QUOTE"></input>
+    </form>
+  {% else %}
+    &#0149; <b>Find a Shakespeare quote.</b><br>
+    <form action="/searchplays">
+    <input type=text name="playquery"></input>
+    <input type="submit" value="QUOTE SEARCH"></input>
+    </form>
+  {% endif %}
+
+<p>
+&#0149; <b>Put them together.</b><br>
+  {% if quotechosen and imagechosen %}
 <form action="/merge">
 <input type="submit" value="MERGE IMAGE & QUOTE"></input>
 </form>
-<p></p>
+  {% else %}
+{% endif %}
+
+<p>
+&#0149; <b>Tweet your result.</b>
+  {% if mergelocked %}
 <form action="{{ url_for('tweet') }}" method="post" class="tweet">
   <dl>
     <dt>Thy Tweet:
-    <dd><input type="text" size="140" name="stringChosenShakesline" value="{{stringChosenShakesline}}">
+    <dd><img src="/static/images/shakespeare_250x320.jpg" alt="Shakespeare" height="32" width="25">
     <dd><input type="submit" name="tweet" value="TWEET FINAL RESULT"></input>
   </dl>
 </form>
-
+{% endif %}
 
 
 {% endblock %}

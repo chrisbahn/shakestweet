@@ -3,13 +3,15 @@
 
 Results for "{{searchShakes}}." Select a quote from the choices below or choose "New Search" to start again:
 <p>
-<form action="/newsearch">
-<input type="submit" name="submit" value="New search"></input><br>
+<form action="/searchplays">
+<input type=text name="playquery"></input>
+<input type="submit" value="NEW SEARCH"></input>
 </form>
+<p>
 <form action="/quotechosen">
     <input type="submit" name="submit" value="Choose selected quote"></input><br>
   {% for line in shakeslines %}
-     <input type="radio" name="quotechoice" value="{{ line.line_id }}"> {{ line.line_id }}: {{ line.speaker }}: {{ line.text_entry }} (from <i>{{ line.play_name}}</i>)<br>
+     <input type="radio" name="quotechoice" value="{{ line.line_id }}"> {{ line.speaker }}: {{ line.text_entry }} (from <i>{{ line.play_name}}</i>)<br>
   {% endfor %}
 </form>
 

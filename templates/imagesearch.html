@@ -1,17 +1,18 @@
-{% extends "shakestweet.html" %}
+{% extends "layout.html" %}
 {% block imagesearch %}
 
-<b>Hello</b> from a template
-
-{{data}}
-
-{% for image in imagefilenames %}
-<P><img src="{{item}}">
-{% endfor %}
-
-<form action="/search">
-<input type=text name="query">Search for your image!</input>
-<input type="submit">Click to search </input>
+Results for "{{searchImages}}." Select an image from the choices below or choose "New Search" to start again:
+<p>
+<form action="/searchimages">
+<input type=text name="imagequery"></input>
+<input type="submit" value="NEW SEARCH"></input>
 </form>
+<form action="/imagechosen">
+  <input type="submit" name="submit" value="Choose selected image"></input><br>
+  {% for photo in imageList %}
+     <input type="radio" name="imagechoice" value="{{photo}}"> <img src="static/images/{{photo}}.jpg"><br>
+  {% endfor %}
+</form>
+
 {% endblock %}
 

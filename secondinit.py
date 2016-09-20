@@ -20,7 +20,8 @@ def main():
     data = [line_id, play_name, speech_number, line_number, speaker, text_entry]
 
 #    if not hasattr(g, 'sqlite_db'):
-    db = sqlite3.connect('fnord')
+#     db = sqlite3.connect('fnord') # This was the working db up to 9/30
+    db = sqlite3.connect('globe.db')  # This is the working db as of 9/30
 #    rv.row_factory = sqlite3.Row
 
     db.execute('drop table if exists shakespearetext')
@@ -35,6 +36,20 @@ def main():
         data = [line_id, play_name, speech_number, line_number, speaker, text_entry]
         db.execute('insert into shakespearetext (line_id, play_name, speech_number, line_number, speaker, text_entry) values (?, ?, ?, ?, ?, ?)', data)
         db.commit()
-        print(bill[stratford]["text_entry"])
+        print(str(bill[stratford]["line_id"]) + ": " + bill[stratford]["text_entry"])
+
+    db.execute('drop table if exists tweetable')
+    db.execute('create table tweetable(id integer primary key, verbiage text not null, image text not null, quotechosen boolean, imagechosen boolean, quotelocked boolean, imagelocked boolean)')
+    id = 0
+    verbiage = "The rest is silence."
+    image = "blank"
+    quotechosen = False
+    imagechosen = False
+    quotelocked = False
+    imagelocked = False
+    data = [id, verbiage, image, quotechosen, imagechosen, quotelocked, imagelocked]
+    db.execute('insert into tweetable (id, verbiage, image, quotechosen, imagechosen, quotelocked, imagelocked) values (?, ?, ?, ?, ?, ?, ?)', data)
+    db.commit()
+    print(image)
 
 main()
