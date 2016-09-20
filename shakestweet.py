@@ -1,14 +1,13 @@
 # Modified from http://flask.pocoo.org/docs/0.11/tutorial/
 
-# ORDER OF BATTLE:
 # 1) Program queries art database, user selects picture // WORKS Can query Flickr and return results.
 # 2) Program queries quote database, returns results, user selects quote // WORKS
 # 2a) User can edit quote // WORKS
-# 3) User triggers art/quote merger into new image// TBA WORKS, not yet merged into main program. Program triggers auto-merger which is saved to a file. But user should be able to tweak results, or at least the auto-merge should look better.
-# 4) User accepts merged image, or makes tweaks until result is satisfactory // TBA
+# 3) User triggers art/quote merger into new image// WORKS
+# 4) User can edit/tweak result // TBA
 # 5) User sends image to Twitter account:
 #    a) User can Tweet text // WORKS
-#    b) User can tweet image // TBA
+#    b) User can tweet image // WORKS
 
 import os
 import json, requests, sys, random
@@ -60,6 +59,7 @@ class Flickr():
 
         #Or, maybe you want lots of pictures? This fetches the first 5
         # imageResultList = []
+        # TODO The program crashes during the loop below if it does not return at least 5 results
         for imageResult in range(0, 5):
             jsonforphoto = flickrResponseJson['photos']['photo'][imageResult]
             #deal with this in the following way. vvvvvvv
@@ -92,37 +92,6 @@ class Flickr():
                 shutil.copyfileobj(resp.raw, out_file)
             del resp
 
-        # TODO: Does Twitter have a size limit on photos?
-        # TODO: Allow user to choose font size and color
-        # TODO: Wrap text so it doesn't extend past right edge of image
-        # TODO: Make default text larger and bolder
-        # TODO: Tweet the image
-
-        # This code allows you to add text on top of an image. Modified from: https://pillow.readthedocs.io/en/3.3.x/reference/ImageDraw.html?highlight=text
-        # get an image
-        base = Image.open('static/images/imageResult1.jpg').convert('RGBA')
-
-        # make a blank image for the text, initialized to transparent text color
-        txt = Image.new('RGBA', base.size, (255,255,255,0))
-
-        # get a font
-        # fnt = ImageFont.truetype('Pillow/Tests/fonts/FreeMono.ttf', 40)
-        # fnt = ImageFont.load("arial.pil")
-        fnt = ImageFont.load_default()
-
-        # get a drawing context
-        d = ImageDraw.Draw(txt)
-
-        # draw text, half opacity
-        d.text((10,10), "Hello", font=fnt, fill=(255,255,255,128))
-        # draw text, full opacity
-        d.text((10,60), "Tomorrow and tomorrow and tomorrow creeps in this petty pace from day to day, and all our yesterdays ...", font=fnt, fill=(255,255,255,255))
-
-        out = Image.alpha_composite(base, txt)
-        out.show()
-        # Flickr returns a jpg. Tkinter displays gif. Use pillow to convert the JPG to GIF
-        # Reference https://pillow.readthedocs.org/handbook/tutorial.html
-        out.save('static/images/textandimage.jpg')
 
 
 def connect_db():
@@ -357,8 +326,50 @@ def image_chosen():
 @app.route('/merge')
 def merge_image_and_text():
     flash('Image+text created')
-    # TODO this code is currently in the Flickr() method - move it here
-    return redirect(url_for('start_here'))
+    # TODO: Allow user to choose font size and color
+    # TODO: Wrap text so it doesn't extend past right edge of image
+    # TODO: Make default text larger and bolder
+    # TODO: Tweet the image
+
+    image = get_tweetable_image()
+    imageToMerge = 'static/images/' + image + '.jpg'
+
+    # This code allows you to add text on top of an image. Modified from: https://pillow.readthedocs.io/en/3.3.x/reference/ImageDraw.html?highlight=text
+    # get an image
+    base = Image.open(imageToMerge).convert('RGBA')
+
+    # make a blank image for the text, initialized to transparent text color
+    txt = Image.new('RGBA', base.size, (255, 255, 255, 0))
+
+    # get a font
+    # fnt = ImageFont.truetype('Pillow/Tests/fonts/FreeMono.ttf', 40)
+    # fnt = ImageFont.load("arial.pil")
+    fnt = ImageFont.load_default()
+
+    # get a drawing context
+    d = ImageDraw.Draw(txt)
+
+    verbiage = get_tweetable_text()
+    # draw text, half opacity
+#    d.text((10, 10), "Hello", font=fnt, fill=(255, 255, 255, 128))
+    # draw text, full opacity
+    d.text((20, 40),verbiage,font=fnt, fill=(255, 255, 255, 255))
+
+    out = Image.alpha_composite(base, txt)
+    # out.show()
+    out.save('static/images/merged.jpg')
+
+    # TODO update database to include separate field for merged image, so you don't have to overwrite original
+    # update_tweetable_image('merged')
+    mergedimage = 'merged'
+    update_tweetable_imagelocked(True)
+    verbiage = get_tweetable_text()
+    image = get_tweetable_image()
+    imagechosen = get_tweetable_imagechosen()
+    quotechosen = get_tweetable_quotechosen()
+    quotelocked = get_tweetable_quotelocked()
+    imagelocked = get_tweetable_imagelocked()
+    return render_template('shakestweet.html', shakespeare='shakespeare_250x320', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked, mergedimage=mergedimage)
 
 
 @app.route('/cancel')
@@ -385,60 +396,33 @@ def tweet():
     auth.set_access_token(twitter_access_token, twitter_access_token_secret)
     api = tweepy.API(auth)
 
-    tweetThisText = request.form['stringChosenShakesline']
-    tweetThisImage = request.form['stringChosenShakesline'] # TODO fix this
+    mergedimage = 'merged'
+    verbiage = get_tweetable_text()
+    image = get_tweetable_image()
+
+    # TODO Truncate if verbiage is longer than 140 characters
+    tweetThisText = verbiage
+    tweetThisImage = 'static/images/merged.jpg' # TODO fix this
     api = tweepy.API(auth)
     # The line below does the actual Tweeting.
-    api.update_status(tweetThisText) # for text-only tweets
-    # api.update_with_media(tweetThisImage[tweetThisText]) # for image/video tweets - syntax may be "tweetThisImage,tweetThisText", I'm not sure. Or you could just go with tweetThisImage
-    flash('Tweet posted')
+    # api.update_status(tweetThisText) # for text-only tweets
+    api.update_with_media(tweetThisImage,tweetThisText)
+    flash('Tweet posted!')
 
     # public_tweets = api.home_timeline()
     # for tweet in public_tweets:
     #     print(tweet.text)
-    return render_template('shakestweet.html', data="YOU HAVE TWEETED", quotechosen=False)
 
+    # reset everything to zero and start again
+    verbiage = " "
+    image = "blank"
+    imagechosen = False
+    quotechosen = False
+    quotelocked = False
+    imagelocked = False
+    update_tweetable(verbiage, image, quotechosen, imagechosen, quotelocked, imagelocked)
+    return redirect(url_for('start_here'))
 
-# TODO Kill this when ready.
-@app.route('/showentries')
-def show_entries():
-    db = get_db()
-    cur = db.execute('select title, text from entries order by id desc')
-    entries = cur.fetchall()
-    return render_template('show_entries.html', entries=entries)
-
-# TODO Kill this when ready.
-@app.route('/add', methods=['POST'])
-def add_entry():
-    if not session.get('logged_in'):
-        abort(401)
-    db = get_db()
-    db.execute('insert into entries (title, text) values (?, ?)',[request.form['title'], request.form['text']])
-    db.commit()
-    flash('New entry was successfully posted')
-    return redirect(url_for('show_entries'))
-
-# TODO Kill this when ready.
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = None
-    if request.method == 'POST':
-        if request.form['username'] != app.config['USERNAME']:
-            error = 'Invalid username'
-        elif request.form['password'] != app.config['PASSWORD']:
-            error = 'Invalid password'
-        else:
-            session['logged_in'] = True
-            flash('You were logged in')
-            return redirect(url_for('show_entries'))
-    return render_template('login.html', error=error)
-
-# TODO Kill this when ready.
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    flash('You were logged out')
-    return redirect(url_for('show_entries'))
 
 
 

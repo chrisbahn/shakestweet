@@ -2,18 +2,28 @@
 {% block shakestweet %}
 <img src="static/images/{{ shakespeare }}.jpg" alt="Shakespeare" height="200" align="right">
   {% if imagechosen %}
-<img src="static/images/{{ image }}.jpg" height="150"><br>
+    &#0149; Your image:<br>
+    <img src="static/images/{{ image }}.jpg" height="150"><br>
+    <form action="/searchimages">
+    <input type=text name="imagequery"></input>
+    <input type="submit" value="NEW IMAGE SEARCH"></input>
+    </form>
   {% else %}
-&#0149; <b>Find an image.</b><br>
-<form action="/searchimages">
-<input type=text name="imagequery"></input>
-<input type="submit" value="IMAGE SEARCH"></input>
-</form>
-{% endif %}
+    &#0149; <b>Find an image.</b><br>
+    <form action="/searchimages">
+    <input type=text name="imagequery"></input>
+    <input type="submit" value="IMAGE SEARCH"></input>
+    </form>
+  {% endif %}
 <p>
   {% if quotelocked and quotechosen %}
     &#0149; Your quote:<br><b>{{verbiage}}</b><br>
-  {% elif quotechosen and not quotelocked %}
+       <p>
+      <form action="/searchplays">
+      <input type=text name="playquery"></input>
+      <input type="submit" value="NEW TEXT SEARCH"></input>
+      </form>
+ {% elif quotechosen and not quotelocked %}
     &#0149; <b>Quote chosen.</b> Edit the text, if desired, then lock the quote before the next step:<br>
     <form action="/quotelocked">
     <input type="text" size="60" name="lockquote" value="{{verbiage}}"></input>
@@ -29,22 +39,19 @@
 
 <p>
 &#0149; <b>Put them together.</b><br>
-  {% if quotechosen and imagechosen %}
+  {% if imagelocked %}
+    <img src="static/images/{{ mergedimage }}.jpg" height="150"><br>
+  {% elif quotechosen and imagechosen %}
 <form action="/merge">
 <input type="submit" value="MERGE IMAGE & QUOTE"></input>
 </form>
-  {% else %}
 {% endif %}
 
 <p>
 &#0149; <b>Tweet your result.</b>
-  {% if mergelocked %}
+  {% if imagelocked %}
 <form action="{{ url_for('tweet') }}" method="post" class="tweet">
-  <dl>
-    <dt>Thy Tweet:
-    <dd><img src="/static/images/shakespeare_250x320.jpg" alt="Shakespeare" height="32" width="25">
-    <dd><input type="submit" name="tweet" value="TWEET FINAL RESULT"></input>
-  </dl>
+  <input type="submit" name="tweet" value="TWEET FINAL RESULT"></input>
 </form>
 {% endif %}
 

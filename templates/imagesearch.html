@@ -5,12 +5,12 @@ Results for "{{searchImages}}." Select an image from the choices below or choose
 <p>
 <form action="/searchimages">
 <input type=text name="imagequery"></input>
-<input type="submit" value="NEW SEARCH"></input>
+<input type="submit" value="NEW IMAGE SEARCH"></input>
 </form>
 <form action="/imagechosen">
   <input type="submit" name="submit" value="Choose selected image"></input><br>
   {% for photo in imageList %}
-     <input type="radio" name="imagechoice" value="{{photo}}"> <img src="static/images/{{photo}}.jpg"><br>
+     <input type="radio" name="imagechoice" value="{{photo}}"> <img src="static/images/{{photo}}.jpg" height="250"><br>
   {% endfor %}
 </form>
 
