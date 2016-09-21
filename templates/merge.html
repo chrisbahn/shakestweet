@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block imagesearch %}
+
+Your quote overlaid on your image. Tweak the image as necessary and hit the Lock button to move on to the final step: Tweeting!
+<div class="component">
+  <img src="static/images/{{mergedimage}}.jpg">
+
+   <form action="/tweak" method="post">
+<div class="innerflexbox">
+  <div class="innerflex1">
+        <fieldset>
+        <legend>Color:</legend>
+         <input type="radio" name="color" value="white">White<br>
+         <input type="radio" name="color" value="black">Black<br>
+         <input type="radio" name="color" value="red">Red<br>
+         <input type="radio" name="color" value="yellow">Yellow<br>
+        </fieldset>
+    </div>
+    <div class="innerflex2">
+      Pixels from top: <input type="number" name="yfromtop"><p>(Currently <b>{{yfromtop}}</b>)
+    </div>
+    <div class="innerflex3">
+      Tweak text:<br>
+      <textarea name="verbiage" rows="6" cols="40">{{verbiage|safe}}</textarea>
+    </div>
+  </div>
+  <div>
+      <input type="submit" name="submit" value="UPDATE IMAGE">
+  </div>
+    </form>
+
+<form action="/mergelock">
+  <input type="submit" name="submit" value="LOCK IMAGE CHANGES"></input>
+</form>
+</div>
+
+<div class="innerflexbox">
+<div class="component">
+  Your text selection:<p>
+  <b>{{verbiage}}</b>
+</div>
+<div class="component">
+  Your original photo:<p>
+  <img src="static/images/{{image}}.jpg" height="250">
+</div>
+</div>
+
+{% endblock %}
+

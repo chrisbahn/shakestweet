@@ -10,10 +10,15 @@ h2              { font-size: 1.2em; }
 
 .component      { background-color: #6699ff; color: black; margin: 20px 0 20px 0; padding: 20px; border: 1px solid #000000;}
 
-.metanav        { text-align: right; font-size: 0.8em; padding: 0.3em;
-                  margin-bottom: 1em; background: #fafafa; }
-.flash          { background: #4040a1; color: #ffffff; padding: 0.5em;
-                  border: 1px solid #000000; }
+.innerflexbox        { background-color: #6699ff; color: black; margin: 0px 0 0px 0; padding: 0px; border: 0px solid #000000; display: -webkit-flex; display: flex;  }
+
+.innerflex1           { margin: 1em auto; border: 1px solid #4040a1; padding: 0.4em; background: #6699ff; min-width: 20%; flex-grow: 1;}
+.innerflex2           { margin: 1em auto; border: 1px solid #4040a1; padding: 0.4em; background: #6699ff; min-width: 15%; flex-grow: 1;}
+.innerflex3           { margin: 1em auto; border: 1px solid #4040a1; padding: 0.4em; background: #6699ff; min-width: 40%; flex-grow: 1;}
+.innerflex4           { margin: 1em auto; border: 1px solid #4040a1; padding: 0.4em; background: #6699ff; min-width: 10%; flex-grow: 1; }
+
+.metanav        { text-align: right; font-size: 0.8em; padding: 0.3em; margin-bottom: 1em; background: #fafafa; }
+.flash          { background: #4040a1; color: #ffffff; padding: 0.5em; border: 1px solid #000000; }
 .error          { background: #F0D6D6; padding: 0.5em; }
 
 

@@ -8,14 +8,12 @@
 # 5) User sends image to Twitter account:
 #    a) User can Tweet text // WORKS
 #    b) User can tweet image // WORKS
-# TODO Update style.css
-# TODO Add Twitter timeline to webpage; instructions are on tweepy docs
 
 import os
 import json, requests, sys, random
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
-from wtforms import RadioField, SubmitField
+from wtforms import RadioField, SubmitField,IntegerField,TextAreaField
 from wtforms.validators import DataRequired
 from flask_wtf import Form
 import tweepy
@@ -36,6 +34,10 @@ app.config.update(dict(
 ))
 app.config.from_envvar('SHAKESTWEET_SETTINGS', silent=True)
 
+class ImageTweakForm(Form):
+    yfromtop     = IntegerField()
+    color        = RadioField(choices=['White','Black','Red','Yellow'])
+    verbiage = TextAreaField('To be or not to be')
 
 class Flickr():
     def __init__(self, imagequery, imageResultList):
@@ -57,9 +59,11 @@ class Flickr():
         flickrResponseJson = json.loads(flickrResponseJSONString)
         #Get first json object ('photos') which contains another json object ('photo') which is a json array
 
-        # "total" tells you how many images the search found. The loop below selects all of them.
+        # "total" tells you how many images the search found. The loop below selects all of them, capping it at 50.
         # TODO Break up the list; if more than 10 results, display 11-20 on a "See next 10 results" page
         jsonphotototal = int(flickrResponseJson['photos']['total'])
+        if jsonphotototal > 50:
+            jsonphotototal = 50
         for imageResult in range(0, jsonphotototal):
             jsonforphoto = flickrResponseJson['photos']['photo'][imageResult]
             #deal with this in the following way. vvvvvvv
@@ -231,7 +235,7 @@ def start_here():
     quotelocked = get_tweetable_quotelocked()
     imagelocked = get_tweetable_imagelocked()
     update_tweetable(verbiage, image, quotechosen, imagechosen, quotelocked, imagelocked)
-    return render_template('shakestweet.html', shakespeare='shakespeare_250x320', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked)
+    return render_template('shakestweet.html', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked)
 
 
 @app.route('/searchplays')
@@ -271,7 +275,7 @@ def quote_chosen():
     quotechosen = get_tweetable_quotechosen()
     quotelocked = get_tweetable_quotelocked()
     imagelocked = get_tweetable_imagelocked()
-    return render_template('shakestweet.html', shakespeare='shakespeare_250x320', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked, lineID=lineID)
+    return render_template('shakestweet.html', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked, lineID=lineID)
 
 @app.route('/quotelocked')
 def quote_locked():
@@ -285,7 +289,7 @@ def quote_locked():
     quotechosen = get_tweetable_quotechosen()
     quotelocked = get_tweetable_quotelocked()
     imagelocked = get_tweetable_imagelocked()
-    return render_template('shakestweet.html', shakespeare='shakespeare_linedrawing', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked)
+    return render_template('shakestweet.html', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked)
 
 
 @app.route('/searchimages')
@@ -320,14 +324,43 @@ def image_chosen():
     quotechosen = get_tweetable_quotechosen()
     quotelocked = get_tweetable_quotelocked()
     imagelocked = get_tweetable_imagelocked()
-    return render_template('shakestweet.html', shakespeare='shakespeare_sunglasses_2', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked)
+    return render_template('shakestweet.html', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked)
 
-@app.route('/merge')
+@app.route('/merge', methods=['GET', 'POST'])
 def merge_image_and_text():
-    flash('Image+text created')
+    flash('New image created')
     # TODO: Allow user to choose font size and color
     # TODO: Wrap text so it doesn't extend past right edge of image
     # TODO: Make default text larger and bolder
+
+    # Default values
+    verbiage = get_tweetable_text()
+    yfromtop = 10
+    colora = 255
+    colorb = 255
+    colorc = 255
+
+    # TODO The program currently returns an error when I try to make changes to the merged image&text.
+    # Changed values
+    verbiage = request.form.get("verbiage", get_tweetable_text())
+    yfromtop = request.form.get("yfromtop", "10")
+    color = request.form.get("color", "White")
+    if color == 'Yellow':
+        colora = 255
+        colorb = 255
+        colorc = 0
+    elif color == 'Black':
+        colora = 0
+        colorb = 0
+        colorc = 0
+    elif color == 'Red':
+        colora = 255
+        colorb = 0
+        colorc = 0
+    else:
+        colora = 255
+        colorb = 255
+        colorc = 255
 
     image = get_tweetable_image()
     imageToMerge = 'static/images/' + image + '.jpg'
@@ -340,7 +373,6 @@ def merge_image_and_text():
     txt = Image.new('RGBA', base.size, (255, 255, 255, 0))
 
     # get a font
-    # TODO Fonts not loading properly for any but default, returning OSError: cannot open resource
     # fnt = ImageFont.truetype('Pillow/Tests/fonts/FreeMono.ttf', 40)
     fnt = ImageFont.truetype('/Library/Fonts/Arial.ttf', 30)
     # fnt = ImageFont.load("arial.pil")
@@ -349,17 +381,62 @@ def merge_image_and_text():
     # get a drawing context
     d = ImageDraw.Draw(txt)
 
-    verbiage = get_tweetable_text()
+    # fetchPhotoURL = 'https://farm%s.staticflickr.com/%s/%s_%s.jpg' % (farm, server, id, secret)
     # draw text, half opacity
 #    d.text((10, 10), "Hello", font=fnt, fill=(255, 255, 255, 128))
     # draw text, full opacity
-    d.text((20, 40),verbiage,font=fnt, fill=(255, 255, 255, 255))
+    colora = int(colora)
+    colorb = int(colorb)
+    colorc = int(colorc)
+    yfromtop=int(yfromtop)
+    d.text((10, yfromtop),verbiage,font=fnt, fill=(colora,colorb,colorc, 255))
+    # d.text((10, 10),verbiage,font=fnt, fill=(255,255,255,255))
 
     out = Image.alpha_composite(base, txt)
     # out.show()
     out.save('static/images/merged.jpg')
 
     # TODO update database to include separate field for merged image, so you don't have to overwrite original
+    # update_tweetable_image('merged')
+    mergedimage = 'merged'
+    verbiage = get_tweetable_text()
+    image = get_tweetable_image()
+    imagechosen = get_tweetable_imagechosen()
+    quotechosen = get_tweetable_quotechosen()
+    quotelocked = get_tweetable_quotelocked()
+    imagelocked = get_tweetable_imagelocked()
+    return render_template('merge.html', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked,mergedimage=mergedimage, yfromtop=yfromtop)
+
+@app.route('/tweak', methods=['POST'])
+def tweak():
+    #TODO This section, governing image tweaks, does not work yet
+    # form = ImageTweakForm(request.POST)
+    # if request.method == 'POST':
+    # Changed values
+    # verbiage = request.form.get("verbiage", get_tweetable_text())
+    # yfromtop = request.form.get("yfromtop", "10")
+    # color = request.form.get("color", "White")
+    # if color == 'Yellow':
+    #     colora = 255
+    #     colorb = 255
+    #     colorc = 0
+    # elif color == 'Black':
+    #     colora = 0
+    #     colorb = 0
+    #     colorc = 0
+    # elif color == 'Red':
+    #     colora = 255
+    #     colorb = 0
+    #     colorc = 0
+    # else:
+    #     colora = 255
+    #     colorb = 255
+    #     colorc = 255
+    return redirect(url_for('merge'))
+
+
+@app.route('/mergelock')
+def mergelock():
     # update_tweetable_image('merged')
     mergedimage = 'merged'
     update_tweetable_imagelocked(True)
@@ -369,7 +446,9 @@ def merge_image_and_text():
     quotechosen = get_tweetable_quotechosen()
     quotelocked = get_tweetable_quotelocked()
     imagelocked = get_tweetable_imagelocked()
-    return render_template('shakestweet.html', shakespeare='pop_shakespeare', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked, mergedimage=mergedimage)
+    return render_template('shakestweet.html', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked, mergedimage=mergedimage)
+
+
 
 
 @app.route('/cancel')
@@ -403,7 +482,6 @@ def tweet():
     # TODO Truncate if verbiage is longer than 140 characters
     tweetThisText = verbiage
     tweetThisImage = 'static/images/merged.jpg'
-    api = tweepy.API(auth)
     # The line below does the actual Tweeting.
     # api.update_status(tweetThisText) # for text-only tweets
     api.update_with_media(tweetThisImage,tweetThisText)

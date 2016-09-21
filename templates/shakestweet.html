@@ -47,9 +47,9 @@
   {% if imagelocked %}
     <img src="static/images/{{ mergedimage }}.jpg" height="150"><br>
   {% elif quotechosen and imagechosen %}
-<form action="/merge">
-<input type="submit" value="MERGE IMAGE & QUOTE"></input>
-</form>
+    <form action="/merge" method="post">
+    <input type="submit" value="MERGE IMAGE & QUOTE"></input>
+    </form>
 {% endif %}
 </div>
 <div class="component">
