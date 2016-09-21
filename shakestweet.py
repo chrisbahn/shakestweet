@@ -8,6 +8,8 @@
 # 5) User sends image to Twitter account:
 #    a) User can Tweet text // WORKS
 #    b) User can tweet image // WORKS
+# TODO Update style.css
+# TODO Add Twitter timeline to webpage; instructions are on tweepy docs
 
 import os
 import json, requests, sys, random
@@ -53,20 +55,17 @@ class Flickr():
         #get json back
         flickrResponseJSONString = flickrResponse.read().decode('UTF-8')
         flickrResponseJson = json.loads(flickrResponseJSONString)
-        #Get first json object ('photos') which contains another json object ('photo') which is an json array; each
-        # element represents one photo. Take element 0
-        #firstResponsePhoto = flickrResponseJson['photos']['photo'][0]
+        #Get first json object ('photos') which contains another json object ('photo') which is a json array
 
-        #Or, maybe you want lots of pictures? This fetches the first 5
-        # imageResultList = []
-        # TODO The program crashes during the loop below if it does not return at least 5 results
-        for imageResult in range(0, 5):
+        # "total" tells you how many images the search found. The loop below selects all of them.
+        # TODO Break up the list; if more than 10 results, display 11-20 on a "See next 10 results" page
+        jsonphotototal = int(flickrResponseJson['photos']['total'])
+        for imageResult in range(0, jsonphotototal):
             jsonforphoto = flickrResponseJson['photos']['photo'][imageResult]
             #deal with this in the following way. vvvvvvv
 
             #Extract the secret, server, id and farm; which you need to construct another URL to request a specific photo
             #https://farm{farm-id}.staticflickr.com/{server-id}/{id}_{secret}.jpg
-
             secret = jsonforphoto['secret']
             id = jsonforphoto['id']
             server = jsonforphoto['server']
@@ -286,7 +285,7 @@ def quote_locked():
     quotechosen = get_tweetable_quotechosen()
     quotelocked = get_tweetable_quotelocked()
     imagelocked = get_tweetable_imagelocked()
-    return render_template('shakestweet.html', shakespeare='shakespeare_250x320', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked)
+    return render_template('shakestweet.html', shakespeare='shakespeare_linedrawing', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked)
 
 
 @app.route('/searchimages')
@@ -312,7 +311,7 @@ def search_for_images():
 @app.route('/imagechosen')
 def image_chosen():
     chosenImage = request.args.get('imagechoice', '')
-    flash('You chose the image ' + chosenImage)
+    flash('Image chosen')
     update_tweetable_image(chosenImage)
     update_tweetable_imagechosen(True)
     verbiage = get_tweetable_text()
@@ -321,7 +320,7 @@ def image_chosen():
     quotechosen = get_tweetable_quotechosen()
     quotelocked = get_tweetable_quotelocked()
     imagelocked = get_tweetable_imagelocked()
-    return render_template('shakestweet.html', shakespeare='shakespeare_250x320', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked)
+    return render_template('shakestweet.html', shakespeare='shakespeare_sunglasses_2', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked)
 
 @app.route('/merge')
 def merge_image_and_text():
@@ -329,7 +328,6 @@ def merge_image_and_text():
     # TODO: Allow user to choose font size and color
     # TODO: Wrap text so it doesn't extend past right edge of image
     # TODO: Make default text larger and bolder
-    # TODO: Tweet the image
 
     image = get_tweetable_image()
     imageToMerge = 'static/images/' + image + '.jpg'
@@ -342,9 +340,11 @@ def merge_image_and_text():
     txt = Image.new('RGBA', base.size, (255, 255, 255, 0))
 
     # get a font
+    # TODO Fonts not loading properly for any but default, returning OSError: cannot open resource
     # fnt = ImageFont.truetype('Pillow/Tests/fonts/FreeMono.ttf', 40)
+    fnt = ImageFont.truetype('/Library/Fonts/Arial.ttf', 30)
     # fnt = ImageFont.load("arial.pil")
-    fnt = ImageFont.load_default()
+    # fnt = ImageFont.load_default()
 
     # get a drawing context
     d = ImageDraw.Draw(txt)
@@ -369,7 +369,7 @@ def merge_image_and_text():
     quotechosen = get_tweetable_quotechosen()
     quotelocked = get_tweetable_quotelocked()
     imagelocked = get_tweetable_imagelocked()
-    return render_template('shakestweet.html', shakespeare='shakespeare_250x320', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked, mergedimage=mergedimage)
+    return render_template('shakestweet.html', shakespeare='pop_shakespeare', verbiage=verbiage, image=image, imagechosen=imagechosen, quotechosen=quotechosen, quotelocked=quotelocked, imagelocked=imagelocked, mergedimage=mergedimage)
 
 
 @app.route('/cancel')
@@ -402,16 +402,12 @@ def tweet():
 
     # TODO Truncate if verbiage is longer than 140 characters
     tweetThisText = verbiage
-    tweetThisImage = 'static/images/merged.jpg' # TODO fix this
+    tweetThisImage = 'static/images/merged.jpg'
     api = tweepy.API(auth)
     # The line below does the actual Tweeting.
     # api.update_status(tweetThisText) # for text-only tweets
     api.update_with_media(tweetThisImage,tweetThisText)
     flash('Tweet posted!')
-
-    # public_tweets = api.home_timeline()
-    # for tweet in public_tweets:
-    #     print(tweet.text)
 
     # reset everything to zero and start again
     verbiage = " "

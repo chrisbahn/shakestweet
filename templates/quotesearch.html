@@ -1,19 +1,20 @@
 {% extends "layout.html" %}
 {% block quotesearch %}
-
 Results for "{{searchShakes}}." Select a quote from the choices below or choose "New Search" to start again:
-<p>
+<div class="component">
 <form action="/searchplays">
 <input type=text name="playquery"></input>
 <input type="submit" value="NEW SEARCH"></input>
 </form>
-<p>
+</div>
+<div class="component">
 <form action="/quotechosen">
-    <input type="submit" name="submit" value="Choose selected quote"></input><br>
+    <input type="submit" name="submit" value="CHOOSE SELECTED QUOTE"></input><p>
   {% for line in shakeslines %}
      <input type="radio" name="quotechoice" value="{{ line.line_id }}"> {{ line.speaker }}: {{ line.text_entry }} (from <i>{{ line.play_name}}</i>)<br>
   {% endfor %}
 </form>
+</div>
 
 
 {% endblock %}

@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block shakestweet %}
-<img src="static/images/{{ shakespeare }}.jpg" alt="Shakespeare" height="200" align="right">
+<div class="component">
   {% if imagechosen %}
     &#0149; Your image:<br>
     <img src="static/images/{{ image }}.jpg" height="150"><br>
@@ -15,7 +15,8 @@
     <input type="submit" value="IMAGE SEARCH"></input>
     </form>
   {% endif %}
-<p>
+</div>
+<div class="component">
   {% if quotelocked and quotechosen %}
     &#0149; Your quote:<br><b>{{verbiage}}</b><br>
        <p>
@@ -29,6 +30,10 @@
     <input type="text" size="60" name="lockquote" value="{{verbiage}}"></input>
     <input type="submit" value="LOCK QUOTE"></input>
     </form>
+      <form action="/searchplays">
+      <input type=text name="playquery"></input>
+      <input type="submit" value="NEW TEXT SEARCH"></input>
+      </form>
   {% else %}
     &#0149; <b>Find a Shakespeare quote.</b><br>
     <form action="/searchplays">
@@ -36,8 +41,8 @@
     <input type="submit" value="QUOTE SEARCH"></input>
     </form>
   {% endif %}
-
-<p>
+</div>
+<div class="component">
 &#0149; <b>Put them together.</b><br>
   {% if imagelocked %}
     <img src="static/images/{{ mergedimage }}.jpg" height="150"><br>
@@ -46,14 +51,14 @@
 <input type="submit" value="MERGE IMAGE & QUOTE"></input>
 </form>
 {% endif %}
-
-<p>
-&#0149; <b>Tweet your result.</b>
+</div>
+<div class="component">
+  &#0149; <b>Tweet your result.</b>
   {% if imagelocked %}
 <form action="{{ url_for('tweet') }}" method="post" class="tweet">
   <input type="submit" name="tweet" value="TWEET FINAL RESULT"></input>
 </form>
 {% endif %}
-
+</div>
 
 {% endblock %}

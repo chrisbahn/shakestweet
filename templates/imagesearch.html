@@ -2,17 +2,20 @@
 {% block imagesearch %}
 
 Results for "{{searchImages}}." Select an image from the choices below or choose "New Search" to start again:
-<p>
+<div class="component">
 <form action="/searchimages">
 <input type=text name="imagequery"></input>
 <input type="submit" value="NEW IMAGE SEARCH"></input>
 </form>
+</div>
+<div class="component">
 <form action="/imagechosen">
-  <input type="submit" name="submit" value="Choose selected image"></input><br>
+  <input type="submit" name="submit" value="CHOOSE SELECTED IMAGE"></input><p>
   {% for photo in imageList %}
-     <input type="radio" name="imagechoice" value="{{photo}}"> <img src="static/images/{{photo}}.jpg" height="250"><br>
+     <input type="radio" name="imagechoice" value="{{photo}}"> <img src="static/images/{{photo}}.jpg" height="150"><br>
   {% endfor %}
 </form>
+</div>
 
 {% endblock %}
 

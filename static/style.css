@@ -1,18 +1,19 @@
-body            { font-family: sans-serif; background: #eee; }
-a, h1, h2       { color: #006600; }
+body            { font-family: sans-serif; background: #056eee; }
+a, h1, h2       { color: #4040a1; }
 h1, h2          { font-family: 'Georgia', serif; margin: 0; }
-h1              { border-bottom: 2px solid #eee; }
+h1              { border-bottom: 2px solid #4040a1; }
 h2              { font-size: 1.2em; }
 
-.page           { margin: 2em auto; width: 35em; border: 5px solid #ccc;
-                  padding: 0.8em; background: white; }
-.entries        { list-style: none; margin: 0; padding: 0; }
-.entries li     { margin: 0.8em 1.2em; }
-.entries li h2  { margin-left: -1em; }
-.add-entry      { font-size: 0.9em; border-bottom: 1px solid #ccc; }
-.add-entry dl   { font-weight: bold; }
+.flexbox        { margin: 2em auto; display: -webkit-flex; display: flex; max-width: 900px; }
+.page           { margin: 2em auto; border: 5px solid #4040a1; padding: 0.8em; background: #cccccc; min-width: 80%; flex-grow: 0;}
+.twittertimeline { margin: 2em auto; border: 5px solid #4040a1; padding: 0.8em; background: #cccccc; flex-grow: 1; }
+
+.component      { background-color: #6699ff; color: black; margin: 20px 0 20px 0; padding: 20px; border: 1px solid #000000;}
+
 .metanav        { text-align: right; font-size: 0.8em; padding: 0.3em;
                   margin-bottom: 1em; background: #fafafa; }
-.flash          { background: #CEE5F5; padding: 0.5em;
-                  border: 1px solid #AACBE2; }
+.flash          { background: #4040a1; color: #ffffff; padding: 0.5em;
+                  border: 1px solid #000000; }
 .error          { background: #F0D6D6; padding: 0.5em; }
+
+

@@ -1,15 +1,25 @@
 <!doctype html>
 <title>Shakestweet</title>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+<div class="flexbox">
 <div class="page">
-  <h1>Shakestweet</h1>
-  <div class="metanav">
-  {% if not session.logged_in %}
-    <a href="{{ url_for('login') }}">log in</a>
+  {% if imagechosen and not quotechosen %}
+  <img src="static/images/1991.jpg" alt="Shakespeare" height="100" align="right" border="4">
+  {% elif quotelocked and quotechosen and not imagechosen %}
+  <img src="static/images/ShakespeareGarciayMas.jpg" alt="Shakespeare" height="150" align="right" border="4">
+  {% elif quotechosen and not quotelocked and not imagechosen %}
+  <img src="static/images/shakespeare_warholian.jpg" alt="Shakespeare" height="150" align="right" border="4">
+  {% elif quotechosen and not quotelocked and imagechosen %}
+  <img src="static/images/pop_shakespeare.jpg" alt="Shakespeare" height="150" align="right" border="4">
+  {% elif quotelocked and quotechosen and imagechosen and not imagelocked %}
+  <img src="static/images/shakespeare_cubist.jpg" alt="Shakespeare" height="150" align="right" border="4">
+  {% elif imagelocked %}
+  <img src="static/images/shakespeare_chandos.jpg" alt="Shakespeare" height="150" align="right" border="4">
   {% else %}
-    <a href="{{ url_for('logout') }}">log out</a>
+  <img src="static/images/shakespeare_3colours.jpg" alt="Shakespeare" height="150" align="right" border="4">
   {% endif %}
-  </div>
+  <h1>Shakestweet</h1>
+<br>
   {% for message in get_flashed_messages() %}
     <div class="flash">{{ message }}</div><br>
   {% endfor %}
@@ -21,5 +31,8 @@
   <form action="/cancel" align="right">
 <input type="submit" name="cancel" value="CANCEL AND START OVER"></input>
 </form>
-
+</div>
+<div class="twittertimeline">
+<a class="twitter-timeline" data-width="300" data-height="800" data-theme="dark" data-link-color="#2B7BB9" href="https://twitter.com/DrMehendriSolon">Tweets by Shakestweet</a> <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+</div>
 </div>
